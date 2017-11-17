@@ -40,7 +40,9 @@
         button.setAttribute('data-clipboard-text', grabbedInfoForCommit.replace('%tags%', result));
     }
 
-    let grabbedInfoForBranch = `${$('#key-val').innerText}-${$('#summary-val').innerText}`.replace(/\s/ig, '-');
+    let grabbedInfoForBranch = `${$('#key-val').innerText}-${$('#summary-val').innerText}`.
+        replace(/\s|\]\[|\]\s\[/ig, '-').replace(/^[\./]|\.\.|@{|[\/\.]$|^@$|[~^:\x00-\x20\x7F\s?*[\]\\]/ig, '');
+
     let grabbedInfoForCommit = `[${$('#key-val').innerText}]%tags% ${$('#summary-val').innerText}`;
 
     const branchButtonNames = ['feature', 'bugfix', 'hotfix'];
@@ -57,7 +59,8 @@
     }
 
     let branchLabel = document.createElement('span');
-    branchLabel.innerHTML = `<img class="clippy" src="https://clipboardjs.com/assets/images/clippy.svg" width="13" alt="Copy branch to clipboard"> Branch: `;
+    branchLabel.innerHTML = `<img class="clippy" src="https://clipboardjs.com/assets/images/clippy.svg" 
+                                width="13" alt="Copy branch to clipboard"> Branch: `;
 
     container.appendChild(branchLabel);
     branchButtons.forEach(button => container.appendChild(button));
