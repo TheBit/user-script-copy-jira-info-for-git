@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Copy JIRA info for Git
 // @namespace    https://github.com/TheBit/user-script-copy-jira-info-for-git
-// @version      1.9
+// @version      1.10
 // @description  try to take over the world!
 // @author       TheBit
 // @license MIT
@@ -12,6 +12,7 @@
 
 (function() {
     'use strict';
+    //Tmp 1
     let $ = selector => document.querySelector(selector);
 
     function createBranchButton(name, grabbedInfo) {
