@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Copy JIRA info for Git
 // @namespace    https://github.com/TheBit/user-script-copy-jira-info-for-git
-// @version      1.2
+// @version      1.3
 // @description  try to take over the world!
 // @author       TheBit
 // @license MIT
@@ -41,7 +41,7 @@
         button.setAttribute('data-clipboard-text', grabbedInfoForCommit.replace('%tags%', result));
     }
 
-    let grabbedInfoForBranch = `${$('#key-val').innerText}-${$('#summary-val').innerText}`.
+    let grabbedInfoForBranch = `${$('#summary-val').innerText}`.
         replace(/\s\s|\[.*?\]/ig, '')./* Strip double spaces and tags in square brackets e.g.: [tag] */
         trim()./* After removing square brackets - there might be leading white space left, so need to trim */
         replace(/\s/ig, '-'). /* Replace all spaces with dashes */
@@ -51,7 +51,7 @@
     let grabbedInfoForCommit = `[${$('#key-val').innerText}]%tags% ${$('#summary-val').innerText}`;
 
     const branchButtonNames = ['feature', 'bugfix', 'hotfix'];
-    const branchButtons = branchButtonNames.map(name => createBranchButton(name, grabbedInfoForBranch));
+    const branchButtons = branchButtonNames.map(name => createBranchButton(name, `${$('#key-val').innerText}-${grabbedInfoForBranch}`));
 
     const commitButtonNames = ['fix', 'add', 'upd', 'del', 'version', 'revert', 'nginx'];
     const commitButtons = commitButtonNames.map(name => createCommitButton(name));
