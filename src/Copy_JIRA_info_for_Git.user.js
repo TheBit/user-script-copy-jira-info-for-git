@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Copy JIRA info for Git
 // @namespace    https://github.com/TheBit/user-script-copy-jira-info-for-git
-// @version      1.6
+// @version      1.7
 // @description  try to take over the world!
 // @author       TheBit
 // @license MIT
@@ -52,7 +52,9 @@
 
     let grabbedInfoForCommit = `${$('#summary-val').innerText}`.
         replace(/\s\s/ig, ' ')./* Replace double spaces with single space */
-        replace(/\[.*?\]/ig, '');/* Strip tags in square brackets e.g.: [tag] */
+        replace(/\[.*?\]/ig, '')./* Strip tags in square brackets e.g.: [tag] */
+        trim()./* After removing square brackets - there might be leading white space left, so need to trim */
+        split(' ').slice(0, 5).join(' '); /* Take only first 5 words */
     grabbedInfoForCommit = `[${$('#key-val').innerText}]%tags% ${grabbedInfoForCommit}`;
 
     const branchButtonNames = ['feature', 'bugfix', 'hotfix'];
