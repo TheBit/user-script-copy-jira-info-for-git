@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Copy JIRA info for Git
 // @namespace    https://github.com/TheBit/user-script-copy-jira-info-for-git
-// @version      1.1
+// @version      1.2
 // @description  try to take over the world!
 // @author       TheBit
 // @license MIT
@@ -42,7 +42,11 @@
     }
 
     let grabbedInfoForBranch = `${$('#key-val').innerText}-${$('#summary-val').innerText}`.
-        replace(/\s|\]\[|\]\s\[/ig, '-').replace(/^[\./]|\.\.|@{|[\/\.]$|^@$|[~^:\x00-\x20\x7F\s?*[\]\\]/ig, '');
+        replace(/\s\s|\[.*?\]/ig, '')./* Strip double spaces and tags in square brackets e.g.: [tag] */
+        trim()./* After removing square brackets - there might be leading white space left, so need to trim */
+        replace(/\s/ig, '-'). /* Replace all spaces with dashes */
+        replace(/^[\./]|\.\.|@{|[\/\.]$|^@$|[~^:\x00-\x20\x7F\s?*[\]\\]/ig, '')./* Strip all forbidden chars */
+        split('-').slice(0, 5).join('-'); /* Take only first 5 words */
 
     let grabbedInfoForCommit = `[${$('#key-val').innerText}]%tags% ${$('#summary-val').innerText}`;
 
