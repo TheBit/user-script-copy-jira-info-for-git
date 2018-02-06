@@ -101,7 +101,7 @@
     button.onclick = () => handleCommitClick(button, grabbedInfoForCommit);
 });
 
-    $(".aui-page-header-inner").appendChild(container);
+    $(".toolbar-split.toolbar-split-left").appendChild(container);
 
     let showButton = document.createElement('button');
     showButton.classList.add('ellipsis-expander', 'showButton');
