@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Copy JIRA info for Git
 // @namespace    https://github.com/TheBit/user-script-copy-jira-info-for-git
-// @version      1.10
+// @version      1.11
 // @description  try to take over the world!
 // @author       TheBit
 // @license MIT
