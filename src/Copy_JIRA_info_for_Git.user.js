@@ -125,10 +125,10 @@
 
         event.trigger.setAttribute('aria-label', 'Copied ;)');
 
-        event.trigger.classList.add('tooltipped', 'tooltipped-n', 'tooltipped-no-delay');
+        event.trigger.classList.add('tooltipped', `tooltipped-${event.trigger.classList.contains('commit-btn') ? 'n' : 's'}`, 'tooltipped-no-delay');
 
         setTimeout(() => event.trigger.classList.
-        remove('tooltipped', 'tooltipped-n', 'tooltipped-no-delay'), 1000);
+        remove('tooltipped', 'tooltipped-n', 'tooltipped-s', 'tooltipped-no-delay'), 1000);
     });
 
     clipboard.on('error', function(event) {
@@ -136,10 +136,10 @@
 
         event.trigger.setAttribute('aria-label', 'Error during copying to clipboard :(');
 
-        event.trigger.classList.add('tooltipped', 'tooltipped-n', 'tooltipped-no-delay');
+        event.trigger.classList.add('tooltipped', `tooltipped-${event.trigger.classList.contains('commit-btn') ? 'n' : 's'}`, 'tooltipped-no-delay');
 
         setTimeout(() => event.trigger.classList.
-        remove('tooltipped', 'tooltipped-n', 'tooltipped-no-delay'), 1000);
+        remove('tooltipped', 'tooltipped-n', 'tooltipped-s', 'tooltipped-no-delay'), 1000);
     });
 
     //copy from: https://www.npmjs.com/package/primer-buttons
