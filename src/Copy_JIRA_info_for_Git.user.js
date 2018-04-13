@@ -43,6 +43,7 @@
     }
 
     let grabbedInfoForBranch = `${$('#summary-val').innerText}`.
+        replace(/["'\-]/g, "")./* remove quotes and dashes */
         replace(/\s\s/ig, ' ')./* Replace double spaces with single space */
         replace(/\[.*?\]/ig, '')./* Strip tags in square brackets e.g.: [tag] */
         trim()./* After removing square brackets - there might be leading white space left, so need to trim */
