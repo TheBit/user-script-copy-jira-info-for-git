@@ -102,8 +102,8 @@
     const branchButtonNames = ['feature', 'bugfix', 'hotfix'];
     const branchButtons = branchButtonNames.map(name => createBranchButton(name));
 
-  const brands = ['', 'com', 'cy', 'ru', 'tz', 'mt', 'ge'];
-  const brandsSelect = createBrandsSelect(brands);
+    const brands = ['', 'com', 'cy', 'ru', 'tz', 'mt', 'ge'];
+    const brandsSelect = createBrandsSelect(brands);
 
     const commitButtonNames = ['fix', 'add', 'upd', 'del', 'version', 'revert', 'nginx'];
     const commitButtons = commitButtonNames.map(name => createCommitButton(name));
@@ -141,10 +141,10 @@
                                   width="13" alt="Copy commit to clipboard"> Commit:`;
 
     container.appendChild(commitLabel);
-    commitButtons.forEach(button => {
+    commitButtons.forEach((button) => {
         container.appendChild(button);
-    button.onclick = () => handleCommitClick(button, grabbedInfoForCommit);
-});
+        button.onclick = () => handleCommitClick(button, grabbedInfoForCommit);
+    });
 
     $(".toolbar-split.toolbar-split-left").appendChild(container);
 
