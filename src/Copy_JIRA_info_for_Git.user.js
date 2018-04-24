@@ -15,6 +15,61 @@
 (function() {
   'use strict';
 
+  // jira integration parameters
+  const jip = {
+    ticketNameSelector: '#summary-val',
+    ticketIDSelector: '#key-val',
+    ticketTypeSelector: '#type-val',
+    containerSelector: '.ops-menus.aui-toolbar',
+    ticketTypes: {
+      task: 'task',
+      story: 'story',
+      techTask: 'tech task',
+      defect: 'defect',
+      productionDefect: 'production defect',
+    },
+  };
+  // gitLab integration parameters
+  const gip = {
+    access: {
+      param: 'private_token',
+      value: '5VK28u4H9d39NFv1r7sv',
+    },
+    filter: {
+      param: 'search',
+    },
+    pageSize: {
+      param: 'per_page',
+      value: 50,
+    },
+    brandsBranchesFilter: 'master',
+    hotfixBranchesFilter: 'release',
+    projects: {
+      mobile: {
+        key: 'air/air-mobile',
+        name: 'air-mobile',
+        type: 'mobile',
+        mainBranch: 'master',
+        mainBrand: 'com',
+      },
+      desktop: {
+        key: 'air/air-pm',
+        name: 'air-pm',
+        type: 'desktop',
+        mainBranch: 'develop',
+        mainBrand: 'com',
+      },
+    },
+    url: 'https://git.betlab.com/api/v4/projects/{project}/repository/branches?{params}',
+    branchUrl: 'https://git.betlab.com/{project}/tree/{branch}',
+    getGitLabUrl(project, params) {
+      return this.url.replace('{project}', encodeURIComponent(project)).replace('{params}', params);
+    },
+    getGitLabBranchUrl(project, branch) {
+      return this.branchUrl.replace('{project}', encodeURIComponent(project)).replace('{branch}', branch);
+    }
+  },
+
   Vue.component(
     'juactions',
     {
@@ -181,38 +236,38 @@
               label: 'Feature',
               key: 'feature',
               selected: false,
-              filter: 'master',
+              filter: gip.brandsBranchesFilter,
             },
             {
               label: 'Bugfix',
               key: 'bugfix',
               selected: false,
-              filter: 'master',
+              filter: gip.brandsBranchesFilter,
             },
             {
               label: 'Hotfix',
               key: 'hotfix',
               selected: false,
-              filter: 'release',
+              filter: gip.hotfixBranchesFilter,
             },
           ],
           platforms: [
             {
-              label: 'air-pm',
-              key: 'air/air-pm',
+              label: gip.projects.desktop.name,
+              key: gip.projects.desktop.key,
               selected: false,
             },
             {
-              label: 'air-mobile',
-              key: 'air/air-mobile',
+              label: gip.projects.mobile.name,
+              key: gip.projects.mobile.key,
               selected: false,
             },
           ],
           branches: [],
           selectedBranchKey: '',
           initialBranchLabel: '',
-          desktop: 'air/air-pm',
-          mobile: 'air/air-mobile',
+          desktop: gip.projects.desktop.key,
+          mobile: gip.projects.mobile.key,
           showBranchName: false,
           constantPart: '',
           editablePart: '',
@@ -313,10 +368,10 @@
           this.checkBranchExists();
         },
         getTicketName() {
-          return document.querySelector('#summary-val').innerText;
+          return document.querySelector(jip.ticketNameSelector).innerText;
         },
         getTicketID() {
-          return document.querySelector('#key-val').innerText;
+          return document.querySelector(jip.ticketIDSelector).innerText;
         },
         getEditablePart() {
           const ticketName = this.getTicketName();
@@ -335,19 +390,19 @@
         getBranches(type, search) {
           const params = [
             {
-              key: 'private_token',
-              value: '5VK28u4H9d39NFv1r7sv',
+              key: gip.access.param,
+              value: gip.access.value,
             },
             {
-              key: 'search',
+              key: gip.filter.param,
               value: search,
             },
             {
-              key: 'per_page',
-              value: 50,
+              key: gip.pageSize.param,
+              value: gip.pageSize.value,
             },
           ];
-          axios.get(`https://git.betlab.com/api/v4/projects/${encodeURIComponent(type)}/repository/branches?${this.processParams(params)}`)
+          axios.get(gip.getGitLabUrl(type, this.processParams(params)))
                .then((response) => {
                  console.log(response);
                  this.filterBranches(response.data, type, search);
@@ -361,15 +416,15 @@
           const selectedPlatform = this.getSelected(this.platforms);
           const params = [
             {
-              key: 'private_token',
-              value: '5VK28u4H9d39NFv1r7sv',
+              key: gip.access.param,
+              value: gip.access.value,
             },
             {
-              key: 'search',
+              key: gip.filter.param,
               value: this.constantPart,
             },
           ];
-          axios.get(`https://git.betlab.com/api/v4/projects/${encodeURIComponent(selectedPlatform.key)}/repository/branches?${this.processParams(params)}`)
+          axios.get(gip.getGitLabUrl(selectedPlatform.key, this.processParams(params)))
                .then((response) => {
                  console.log(response);
                  this.branchExists = response.data.length > 0;
@@ -386,22 +441,26 @@
             this.selectedBranchKey = selectedBranch.key;
           }
 
-          if (type === this.desktop && search !== 'release') {
+          if (type === this.desktop && search !== gip.hotfixBranchesFilter) {
             this.branches = [
               {
-                label:    'com',
-                key:      'develop',
-                value:    'develop',
-                selected: this.initialBranchLabel === 'com' || this.selectedBranchKey === 'develop' || false,
+                label:    gip.projects.desktop.mainBrand,
+                key:      gip.projects.desktop.mainBranch,
+                value:    gip.projects.desktop.mainBranch,
+                selected: this.initialBranchLabel === gip.projects.desktop.mainBrand
+                          || this.selectedBranchKey === gip.projects.desktop.mainBranch
+                          || false,
               },
             ];
-          } else if (type === this.mobile && search !== 'release') {
+          } else if (type === this.mobile && search !== gip.hotfixBranchesFilter) {
             this.branches = [
               {
-                label:    'com',
-                key:      'master',
-                value:    'master',
-                selected: this.initialBranchLabel === 'com' || this.selectedBranchKey === 'master' || false,
+                label:    gip.projects.mobile.mainBrand,
+                key:      gip.projects.mobile.mainBranch,
+                value:    gip.projects.mobile.mainBranch,
+                selected: this.initialBranchLabel === gip.projects.mobile.mainBrand
+                          || this.selectedBranchKey === gip.projects.mobile.mainBranch
+                          || false,
               },
             ];
           } else {
@@ -409,7 +468,7 @@
           }
 
           branches.forEach((branch) => {
-            if (search === 'master') {
+            if (search === gip.brandsBranchesFilter) {
               const branchNameParts = branch.name.split('-');
 
               if (branchNameParts.length > 1) {
@@ -422,14 +481,17 @@
                   }
                 );
               }
-            } else if (search === 'release') {
+            } else if (search === gip.hotfixBranchesFilter) {
               const branchNameParts = branch.name.split('/');
 
               if (branchNameParts.length > 1 && branch.name.indexOf(new Date().getFullYear()) !== -1) {
                 let branchBrand = this.getBranchBrand(branchNameParts[0]);
 
-                if (branchBrand === 'release' || branchBrand === 'mobile' || branchBrand === 'desktop') {
-                  branchBrand = 'com';
+                if (branchBrand === gip.hotfixBranchesFilter
+                    || branchBrand === gip.projects.mobile.type
+                    || branchBrand === gip.projects.desktop.type
+                ) {
+                  branchBrand = gip.projects.desktop.mainBrand;
                 }
 
                 const branchIndex = this.getBranchIndexByBrand(branchBrand);
@@ -476,14 +538,14 @@
         createBranch() {
           const selectedPlatform = this.getSelected(this.platforms);
           if (this.branchExists) {
-            const win = window.open(`https://git.betlab.com/${selectedPlatform.key}/tree/${this.existedBranch.name}`, '_blank');
+            const win = window.open(gip.getGitLabBranchUrl(selectedPlatform.key, this.existedBranch.name), '_blank');
             win.focus();
           } else {
             const selectedBranch = this.getSelected(this.branches);
             const params = [
               {
-                key:   'private_token',
-                value: '5VK28u4H9d39NFv1r7sv',
+                key:   gip.access.param,
+                value: gip.access.value,
               },
               {
                 key:   'branch',
@@ -494,7 +556,7 @@
                 value: selectedBranch.key,
               },
             ];
-            axios.post(`https://git.betlab.com/api/v4/projects/${encodeURIComponent(selectedPlatform.key)}/repository/branches?${this.processParams(params)}`)
+            axios.post(gip.getGitLabUrl(selectedPlatform.key, this.processParams(params)))
                  .then((response) => {
                    console.log(response);
                    this.checkBranchExists();
@@ -505,18 +567,18 @@
           }
         },
         getInitialIssueType() {
-          const issueType = document.querySelector('#type-val').innerText.toLowerCase().trim();
+          const issueType = document.querySelector(jip.ticketTypeSelector).innerText.toLowerCase().trim();
           const issueTypesMapping = {
             feature: [
-              'task',
-              'story',
-              'tech task'
+              jip.ticketTypes.task,
+              jip.ticketTypes.story,
+              jip.ticketTypes.techTask,
             ],
             bugfix: [
-              'defect'
+              jip.ticketTypes.defect
             ],
             hotfix: [
-              'production defect'
+              jip.ticketTypes.productionDefect
             ],
           };
           let initialIssueType;
@@ -532,13 +594,14 @@
         getInitialPlatform() {
           const ticketName = this.getTicketName();
 
-          if (ticketName.toLowerCase().indexOf('mobile') !== -1) {
-            return 'air-mobile';
+          if (ticketName.toLowerCase().indexOf(gip.projects.mobile.type) !== -1) {
+            return gip.projects.mobile.name;
           }
 
-          return 'air-pm';
+          return gip.projects.desktop.name;
         },
         getInitialBrand() {
+          // TODO remove hardcoded brands
           const ticketName = this.getTicketName();
 
           if (ticketName.toLowerCase().indexOf('[cy]') !== -1) {
@@ -562,8 +625,7 @@
   const appRoot = document.createElement('div');
   appRoot.id = 'juapp';
   appRoot.innerHTML = '<juactions></juactions>';
-  appRoot.classList.add('toolbar-group');
-  const appContainer = document.querySelector('.ops-menus.aui-toolbar');
+  const appContainer = document.querySelector(jip.containerSelector);
   appContainer.appendChild(appRoot);
   new Vue(
     {
