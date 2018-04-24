@@ -68,7 +68,7 @@
     getGitLabBranchUrl(project, branch) {
       return this.branchUrl.replace('{project}', encodeURIComponent(project)).replace('{branch}', branch);
     }
-  },
+  };
 
   Vue.component(
     'juactions',
