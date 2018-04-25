@@ -28,6 +28,18 @@
       defect: 'defect',
       productionDefect: 'production defect',
     },
+    getTicketName() {
+      return document.querySelector(this.ticketNameSelector).innerText;
+    },
+    getTicketID() {
+      return document.querySelector(this.ticketIDSelector).innerText;
+    },
+    getTicketType() {
+      return document.querySelector(this.ticketTypeSelector).innerText;
+    },
+    getContainer() {
+      return document.querySelector(this.containerSelector);
+    }
   };
   // gitLab integration parameters
   const gip = {
@@ -348,13 +360,13 @@
           }
         },
         setCommitMessage() {
-          const ticket = this.getTicketID();
-          const ticketName = this.getTicketName();
+          const ticket = jip.getTicketID();
+          const ticketName = jip.getTicketName();
           const ticketNameFormatted = ticketName.replace(/\s\s/ig, ' ').replace(/\[.*?\]/ig, '').trim();
           this.commitMessage = `[${ticket}] ${ticketNameFormatted}`;
         },
         setConstantPart() {
-          const ticket = this.getTicketID();
+          const ticket = jip.getTicketID();
           const issueType = this.issueTypes.filter(issue => issue.selected)[0];
           const brand = this.branches.filter(branch => branch.selected)[0];
 
@@ -374,7 +386,7 @@
           return document.querySelector(jip.ticketIDSelector).innerText;
         },
         getEditablePart() {
-          const ticketName = this.getTicketName();
+          const ticketName = jip.getTicketName();
           return this.formatToValidBranchName(ticketName);
         },
         formatToValidBranchName(string, limit = 5) {
@@ -567,7 +579,7 @@
           }
         },
         getInitialIssueType() {
-          const issueType = document.querySelector(jip.ticketTypeSelector).innerText.toLowerCase().trim();
+          const issueType = jip.getTicketType().toLowerCase().trim();
           const issueTypesMapping = {
             feature: [
               jip.ticketTypes.task,
@@ -592,7 +604,7 @@
           return initialIssueType;
         },
         getInitialPlatform() {
-          const ticketName = this.getTicketName();
+          const ticketName = jip.getTicketName();
 
           if (ticketName.toLowerCase().indexOf(gip.projects.mobile.type) !== -1) {
             return gip.projects.mobile.name;
@@ -602,7 +614,7 @@
         },
         getInitialBrand() {
           // TODO remove hardcoded brands
-          const ticketName = this.getTicketName();
+          const ticketName = jip.getTicketName();
 
           if (ticketName.toLowerCase().indexOf('[cy]') !== -1) {
             return 'cy';
@@ -625,7 +637,7 @@
   const appRoot = document.createElement('div');
   appRoot.id = 'juapp';
   appRoot.innerHTML = '<juactions></juactions>';
-  const appContainer = document.querySelector(jip.containerSelector);
+  const appContainer = jip.getContainer();
   appContainer.appendChild(appRoot);
   new Vue(
     {
