@@ -457,8 +457,6 @@
           return document.querySelector(jip.ticketIDSelector).innerText;
         },
         getEditablePart() {
-          console.log(this.editablePart);
-
           if (this.editablePart) {
             return this.editablePart;
           }
