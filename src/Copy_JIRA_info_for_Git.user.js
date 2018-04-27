@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jira Utils
 // @namespace    https://github.com/TheBit/user-script-copy-jira-info-for-git
-// @version      2.0.0
+// @version      2.0.1
 // @description  Helpful jira functionality
 // @author       TheBit, D4ST1N
 // @license MIT
@@ -78,7 +78,77 @@
       return this.url.replace('{project}', encodeURIComponent(project)).replace('{params}', params);
     },
     getGitLabBranchUrl(project, branch) {
-      return this.branchUrl.replace('{project}', encodeURIComponent(project)).replace('{branch}', branch);
+      return this.branchUrl.replace('{project}', project).replace('{branch}', branch);
+    }
+  };
+
+  const notification = {
+    config: {
+      delay: 1500,
+    },
+    setStyles() {
+      const style = document.createElement('style');
+      style.innerHTML = `
+      .ju-notice {
+        position: absolute;
+        z-index: 100;
+        background: #455A64;
+        color: #fff;
+        display: flex;
+        padding: 5px 10px;
+        border-radius: 5px;
+        transform: translate(-50%, -100%);
+        animation-name: notice-out;
+        animation-delay: .25s;
+        animation-duration: 1.25s;
+        animation-fill-mode: forwards;
+      }
+      @keyframes notice-out {
+        0% {
+          opacity: 1;
+          transform: translate(-50%, -100%);
+        }
+        100% {
+          opacity: 0;
+          transform: translate(-50%, -200%);
+        }
+      }`;
+      document.body.appendChild(style);
+    },
+    getNotificationID() {
+      return Date.now();
+    },
+    createNotification() {
+      const notification = document.createElement('div');
+      notification.className = 'ju-notice';
+
+      return notification;
+    },
+    getCoordinates(element) {
+      const box = element.getBoundingClientRect();
+
+      return {
+        top: box.top + pageYOffset,
+        left: box.left + pageXOffset
+      };
+    },
+    show({element, message, config = this.config}) {
+      if (element.$juNoticeID) {
+        return;
+      }
+      const notification = this.createNotification();
+      const elementPosition = this.getCoordinates(element);
+      notification.innerHTML = message;
+      notification.style.top = `${elementPosition.top}px`;
+      notification.style.left = `${elementPosition.left + element.offsetWidth / 2}px`;
+      document.body.appendChild(notification);
+      const id = this.getNotificationID();
+      const timer = setTimeout(() => {
+        document.body.removeChild(notification);
+        delete element.$juNoticeID;
+        clearTimeout(timer);
+      }, config.delay);
+      element.$juNoticeID = id;
     }
   };
 
@@ -126,7 +196,7 @@
               <input type="text" disabled class="branch-name__constant-part" :value="constantPart">
               <input type="text" class="branch-name__editable-part" v-model="editablePart" ref="editablePart" @input="formatBranchName">
               <div class="group-separator"></div>
-              <div class="action-button copyButton" :data-clipboard-text="newBranchName">
+              <div class="action-button copyButton" :data-clipboard-text="newBranchName" @click="copy">
                 <span class="action-button__title">Copy</span>
                 <span class="aui-icon aui-icon-small aui-iconfont-copy-clipboard action-button__icon"></span>
               </div>
@@ -145,7 +215,7 @@
             </div>
             <div class="group-separator"></div>
             <div class="buttons-group">
-              <div class="action-button copyButton" :data-clipboard-text="commitMessage">
+              <div class="action-button copyButton" :data-clipboard-text="commitMessage" @click="copy">
                 <span class="action-button__title">Commit message</span>
                 <span class="aui-icon aui-icon-small aui-iconfont-devtools-commit action-button__icon"></span>
               </div>
@@ -290,6 +360,7 @@
         };
       },
       mounted() {
+        notification.setStyles();
         this.createStyles();
         this.setCommitMessage();
         this.setInitialValues();
@@ -386,6 +457,12 @@
           return document.querySelector(jip.ticketIDSelector).innerText;
         },
         getEditablePart() {
+          console.log(this.editablePart);
+
+          if (this.editablePart) {
+            return this.editablePart;
+          }
+
           const ticketName = jip.getTicketName();
           return this.formatToValidBranchName(ticketName);
         },
@@ -547,7 +624,7 @@
         processParams(params) {
           return params.map(param => `${param.key}=${param.value}`).join('&');
         },
-        createBranch() {
+        createBranch(e) {
           const selectedPlatform = this.getSelected(this.platforms);
           if (this.branchExists) {
             const win = window.open(gip.getGitLabBranchUrl(selectedPlatform.key, this.existedBranch.name), '_blank');
@@ -571,12 +648,16 @@
             axios.post(gip.getGitLabUrl(selectedPlatform.key, this.processParams(params)))
                  .then((response) => {
                    console.log(response);
+                   notification.show({ element: e.target, message: 'Created :)' });
                    this.checkBranchExists();
                  })
                  .catch((error) => {
                    console.log(error);
                  });
           }
+        },
+        copy(e) {
+          notification.show({ element: e.target, message: 'Copied :)' });
         },
         getInitialIssueType() {
           const issueType = jip.getTicketType().toLowerCase().trim();
