@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jira Utils
 // @namespace    https://github.com/TheBit/user-script-copy-jira-info-for-git
-// @version      2.0.1
+// @version      2.0.2
 // @description  Helpful jira functionality
 // @author       TheBit, D4ST1N
 // @license MIT
@@ -193,8 +193,8 @@
             <div class="group-separator" v-if="showBranchName"></div>
             <div class="branch-name-block" v-show="showBranchName">
               To: 
-              <input type="text" disabled class="branch-name__constant-part" :value="constantPart">
-              <input type="text" class="branch-name__editable-part" v-model="editablePart" ref="editablePart" @input="formatBranchName">
+              <input type="text" disabled class="ajs-dirty-warning-exempt branch-name__constant-part" :value="constantPart">
+              <input type="text" class="ajs-dirty-warning-exempt branch-name__editable-part" v-model="editablePart" ref="editablePart" @input="formatBranchName">
               <div class="group-separator"></div>
               <div class="action-button copyButton" :data-clipboard-text="newBranchName" @click="copy">
                 <span class="action-button__title">Copy</span>
