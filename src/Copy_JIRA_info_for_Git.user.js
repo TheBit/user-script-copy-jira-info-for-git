@@ -21,6 +21,16 @@
     ticketIDSelector: '#key-val',
     ticketTypeSelector: '#type-val',
     containerSelector: '.ops-menus.aui-toolbar',
+    mainColumnSelector: '.issue-main-column',
+    commentButtonSelector: '#footer-comment-button',
+    commentAreaSelector: '#comment',
+    textTabSelector: '#aui-uid-2',
+    visualTabSelector: '#aui-uid-1',
+    impactAnalysisTemplate: `||Summary||Description||
+|*Version / env*| |
+|*Features modified*| |
+|*Brands /Features affected*| |
+|*What's need to be checked (recommendations from developer)*| |`,
     ticketTypes: {
       task: 'task',
       story: 'story',
@@ -38,7 +48,10 @@
       return document.querySelector(this.ticketTypeSelector).innerText;
     },
     getContainer() {
-      return document.querySelector(this.containerSelector);
+      return document.body;
+    },
+    getMainColumn() {
+      return document.querySelector(this.mainColumnSelector);
     }
   };
   // gitLab integration parameters
@@ -158,7 +171,7 @@
       template: `
           <div class="juactions-root">
             <div class="buttons-group">
-              Branch: 
+              Branch:
               <div
                 v-for="issueType in issueTypes"
                 :key="issueType.key"
@@ -170,7 +183,7 @@
             </div>
             <div class="group-separator"></div>
             <div class="buttons-group">
-              From: 
+              From:
               <div
                 v-for="platform in platforms"
                 :key="platform.key"
@@ -192,7 +205,7 @@
             </div>
             <div class="group-separator" v-if="showBranchName"></div>
             <div class="branch-name-block" v-show="showBranchName">
-              To: 
+              To:
               <input type="text" disabled class="ajs-dirty-warning-exempt branch-name__constant-part" :value="constantPart">
               <input type="text" class="ajs-dirty-warning-exempt branch-name__editable-part" v-model="editablePart" ref="editablePart" @input="formatBranchName">
               <div class="group-separator"></div>
@@ -216,25 +229,53 @@
             <div class="group-separator"></div>
             <div class="buttons-group">
               <div class="action-button copyButton" :data-clipboard-text="commitMessage" @click="copy">
-                <span class="action-button__title">Commit message</span>
+                <span class="action-button__title">Commit</span>
                 <span class="aui-icon aui-icon-small aui-iconfont-devtools-commit action-button__icon"></span>
               </div>
+              <div class="action-button addImpactAnalys" @click="addImpact">
+                <span class="action-button__title">Impact</span>
+                <span class="aui-icon aui-icon-small aui-iconfont-add-comment action-button__icon"></span>
+              </div>
             </div>
+            <div :class="{ 'ju-toggle': true, 'ju-toggle--toggled': collapsed }" @click="toggle"></div>
           </div>`,
       data() {
         return {
           styles: document.createElement('style'),
           baseStyles: `
           #juapp {
-              display: flex;
-              width: 100%;
+              position: fixed;
+              bottom: 0;
+              transition: all .375s;
+              z-index: 2;
+              width: calc(100vw - 75px);
+              left: 55px;
+          }
+          #juapp.collapsed {
+              transform: translateY(calc(100% - 20px));
+          }
+          .ju-toggle {
+              position: absolute;
+              top: 5px;
+              right: 5px;
+              width: 12px;
+              height: 12px;
+              background: url(/s/-blgr2a/76005/c5add0d…/6.1.0/_/download/resources/com.atlassian.auiplugin:aui-sidebar/images/icons/sidebar/icon-toggle.svg) center center no-repeat;
+              background-size: 12px;
+              transition: transform .375s;
+              transform: rotate(-90deg);
+              cursor: pointer;
+          }
+          .ju-toggle--toggled {
+              transform: rotate(90deg);
           }
           .juactions-root {
               display: flex;
               width: 100%;
-              padding: 5px 10px;
+              padding: 20px 10px 5px;
               background: #CFD8DC;
               align-items: center;
+              box-sizing: border-box;
           }
           .buttons-group {
               margin-right: 10px;
@@ -255,6 +296,7 @@
               border-radius: 5px;
               cursor: pointer;
               transition: all .375s;
+              margin-bottom: 5px;
           }
           .action-button--selected {
               background-color: #4CAF50;
@@ -297,6 +339,7 @@
               color: #666;
               opacity: .8;
               margin-left: 5px;
+              margin-bottom: 5px;
               width: 150px;
               text-align: right;
           }
@@ -304,6 +347,7 @@
               height: 28px;
               box-sizing: border-box;
               padding: 3px 8px 3px 0;
+              margin-bottom: 5px;
           }
           .group-separator {
               height: 80%;
@@ -357,6 +401,7 @@
           branchExists: false,
           existedBranch: undefined,
           commitMessage: '',
+          collapsed: false,
         };
       },
       mounted() {
@@ -365,6 +410,11 @@
         this.setCommitMessage();
         this.setInitialValues();
         this.clipboard = new Clipboard('.copyButton');
+        setInterval(() => {
+          if (jip.getMainColumn()) {
+            jip.getMainColumn().style.paddingBottom = `${this.$root.$el.offsetHeight}px`;
+          }
+        }, 1000);
       },
       watch: {
         showBranchName() {
@@ -380,6 +430,10 @@
         }
       },
       methods:  {
+        toggle() {
+          this.collapsed = !this.collapsed;
+          this.$root.$el.classList.toggle('collapsed');
+        },
         createStyles() {
           document.body.appendChild(this.styles);
           this.styles.innerHTML = this.baseStyles;
@@ -656,6 +710,14 @@
         },
         copy(e) {
           notification.show({ element: e.target, message: 'Copied :)' });
+        },
+        addImpact() {
+          document.querySelector(jip.commentButtonSelector).click();
+          setTimeout(() => {
+              document.querySelector(jip.textTabSelector).click();
+              document.querySelector(jip.commentAreaSelector).value = jip.impactAnalysisTemplate;
+              document.querySelector(jip.visualTabSelector).click();
+          }, 200);
         },
         getInitialIssueType() {
           const issueType = jip.getTicketType().toLowerCase().trim();
